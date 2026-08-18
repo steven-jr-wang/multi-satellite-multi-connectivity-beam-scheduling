@@ -1,0 +1,16 @@
+.idea/
+.DS_Store
+__pycache__/
+*.py[cod]
+
+data/*
+!data/.gitkeep
+!data/cell_clusters/
+data/cell_clusters/*
+!data/cell_clusters/.gitkeep
+results/*
+!results/.gitkeep
+figures/*
+!figures/.gitkeep
+
+python/scenario_generation/map.html
