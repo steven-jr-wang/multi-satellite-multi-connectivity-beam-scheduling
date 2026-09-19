@@ -35,7 +35,7 @@ Project_root/
 Install the Python dependencies:
 
 ```bash
-pip install numpy pandas matplotlib shapely cartopy h3 folium geopandas fiona astropy "poliastro==0.17.0"
+pip install numpy pandas matplotlib shapely pyproj cartopy h3 folium geopandas fiona astropy "poliastro==0.17.0"
 ```
 
 Configure Gurobi for MATLAB and replace `YOUR_GUROBI_MATLAB_PATH` in the MATLAB modules with your local Gurobi MATLAB path.

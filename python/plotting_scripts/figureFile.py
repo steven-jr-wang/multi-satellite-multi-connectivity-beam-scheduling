@@ -559,6 +559,35 @@ for artist in ax.images:
 
 fig.set_size_inches(6, 5)
 
+# Add a 50 km scale bar.
+from pyproj import Geod
+_scale_geod = Geod(ellps='WGS84')
+_scale_x, _scale_y = ax.transData.inverted().transform(
+    ax.transAxes.transform((0.055, 0.065)))
+_scale_lon, _scale_lat = ccrs.PlateCarree().transform_point(
+    _scale_x, _scale_y, ax.projection)
+_scale_low, _scale_high = 0.0, 2.0
+for _ in range(50):
+    _scale_delta = (_scale_low + _scale_high) / 2
+    _scale_distance = _scale_geod.inv(
+        _scale_lon, _scale_lat, _scale_lon + _scale_delta, _scale_lat)[2]
+    if _scale_distance < 50000:
+        _scale_low = _scale_delta
+    else:
+        _scale_high = _scale_delta
+_scale_end_x, _ = ax.projection.transform_point(
+    _scale_lon + _scale_delta, _scale_lat, ccrs.PlateCarree())
+_scale_tick = 0.012 * (ax.get_ylim()[1] - ax.get_ylim()[0])
+ax.plot([_scale_x, _scale_end_x], [_scale_y, _scale_y],
+        color='black', linewidth=1.2, zorder=20)
+for _scale_tick_x in (_scale_x, _scale_end_x):
+    ax.plot([_scale_tick_x, _scale_tick_x],
+            [_scale_y - _scale_tick, _scale_y + _scale_tick],
+            color='black', linewidth=1.2, zorder=20)
+ax.text((_scale_x + _scale_end_x) / 2, _scale_y + 1.6 * _scale_tick,
+        '50 km', ha='center', va='bottom', fontsize=10,
+        fontname='Times New Roman', color='black', zorder=20)
+
 output_path = FIGURES_DIR + 'figure1.pdf'
 plt.savefig(output_path, format='pdf', dpi=300, bbox_inches='tight')
 
@@ -645,19 +674,14 @@ N_period_fig6 = int(fig6_info['N_period'].iloc[0])
 num_cells_fig6 = int(fig6_info['num_cells'].iloc[0])
 
 
-_BEAM_OVERLAP_GRAYS = [
-    '#D9D9D9', '#BFBFBF', '#A6A6A6', '#8C8C8C',
-    '#737373', '#595959', '#404040', '#262626'
+_BEAM_CONNECTION_COLORS = [
+    '#3787C0', '#52B8CD', '#20B5AA', '#70BC70',
+    '#B6CB45', '#F2CE37', '#F59A27', '#E52B2F'
 ]
-
-
-def _beam_method_intensity_shades(method_color):
-    """Return eight light-to-dark shades of a method-identifying color."""
-    rgb = np.asarray(mpl.colors.to_rgb(method_color))
-    white = np.ones(3)
-    weights = np.linspace(0.32, 1.0, 8)
-    return [mpl.colors.to_hex((1.0 - weight) * white + weight * rgb)
-            for weight in weights]
+_BEAM_CONNECTION_CMAP = ListedColormap(['#FFFFFF'] + _BEAM_CONNECTION_COLORS)
+_BEAM_CONNECTION_CMAP.set_under('white')
+_BEAM_CONNECTION_NORM = mpl.colors.BoundaryNorm(
+    np.arange(-0.5, 9.5, 1), _BEAM_CONNECTION_CMAP.N)
 
 
 def _beam_constant_positive_runs(row):
@@ -692,7 +716,7 @@ def _style_beam_pattern_axis(ax, n_slots, n_cells):
 
 def _draw_beam_gantt(ax, matrix, method_color):
     """Draw contiguous illumination ribbons with count-dependent intensity."""
-    shades = _beam_method_intensity_shades(method_color)
+    shades = _BEAM_CONNECTION_COLORS
     for cell, row in enumerate(matrix, start=1):
         for start, duration, overlap_count in _beam_constant_positive_runs(row):
             ax.broken_barh(
@@ -710,9 +734,7 @@ def _draw_active_cell_profile(ax, matrix, method_color, n_slots, active_y_max):
     slots = np.arange(1, n_slots + 1)
     for reference_level in (10, 20):
         ax.axhline(reference_level, color='#D9D9D9', linewidth=0.55, zorder=0)
-    ax.fill_between(slots, active_cells, color=method_color,
-                    alpha=0.20, linewidth=0)
-    ax.plot(slots, active_cells, color=method_color, linewidth=1.25)
+    ax.plot(slots, active_cells, color='black', linewidth=1.25)
     ax.set_xlim(0.5, n_slots + 0.5)
     ax.set_ylim(0, active_y_max)
     ax.set_yticks(np.arange(0, active_y_max + 1, 10))
@@ -729,8 +751,8 @@ def _draw_active_cell_profile(ax, matrix, method_color, n_slots, active_y_max):
 def _draw_slot_occupancy(ax, matrix, method_color, n_cells, n_slots):
     """Plot the number of selected slots for each beam pattern."""
     slot_occupancy = np.count_nonzero(matrix, axis=1)
-    ax.barh(np.arange(1, n_cells + 1), slot_occupancy,
-            height=0.66, color=method_color, alpha=0.72, edgecolor='none')
+    ax.plot(slot_occupancy, np.arange(1, n_cells + 1),
+            color='black', linewidth=1.25)
     ax.set_xlim(0, n_slots)
     ax.set_xticks([0, n_slots // 2, n_slots])
     ax.set_xlabel('Slot-Occupancy', fontsize=18,
@@ -739,21 +761,24 @@ def _draw_slot_occupancy(ax, matrix, method_color, n_cells, n_slots):
     ax.tick_params(axis='y', left=False, labelleft=False)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
+    ax.spines['left'].set_visible(True)
+    ax.spines['left'].set_color('black')
+    ax.spines['left'].set_linewidth(0.7)
+    ax.spines['bottom'].set_color('black')
     ax.spines['bottom'].set_linewidth(0.7)
 
 
 def _plot_beam_pattern_grid(method_specs, output_path, active_y_max):
     """Create one four-panel beam-pattern figure with shared visual scales."""
     fig = plt.figure(figsize=(18, 13))
-    outer = fig.add_gridspec(2, 2, hspace=0.34, wspace=0.24)
+    outer = fig.add_gridspec(2, 2, hspace=0.25, wspace=0.24)
 
     for idx, (method_name, matrix, method_color) in enumerate(method_specs):
         n_cells, n_slots = matrix.shape
         inner = outer[idx // 2, idx % 2].subgridspec(
             2, 2,
             height_ratios=[0.23, 1.0],
-            width_ratios=[1.0, 0.22],
+            width_ratios=[1.0, 0.17],
             hspace=0.055,
             wspace=0.045
         )
@@ -775,26 +800,14 @@ def _plot_beam_pattern_grid(method_specs, output_path, active_y_max):
             ax_right, matrix, method_color, n_cells, n_slots
         )
 
-    overlap_handles = [
-        Patch(facecolor=_BEAM_OVERLAP_GRAYS[count - 1],
-              edgecolor='none', linewidth=0, label=str(count))
-        for count in range(1, 9)
-    ]
-    fig.legend(
-        handles=overlap_handles,
-        title='Beam Overlapped Count',
-        loc='upper center',
-        bbox_to_anchor=(0.5, 0.995),
-        ncol=8,
-        frameon=False,
-        fontsize=12,
-        title_fontsize=18,
-        handlelength=1.4,
-        handleheight=0.75,
-        columnspacing=1.0,
-        handletextpad=0.35,
-        borderaxespad=0
-    )
+    colorbar_ax = fig.add_axes([0.34, 0.960, 0.32, 0.016])
+    connection_colorbar = fig.colorbar(
+        mpl.cm.ScalarMappable(norm=_BEAM_CONNECTION_NORM,
+                             cmap=_BEAM_CONNECTION_CMAP),
+        cax=colorbar_ax, orientation='horizontal', ticks=np.arange(0, 9))
+    connection_colorbar.ax.set_title('Beam Connection Count', fontsize=16, pad=7)
+    connection_colorbar.ax.tick_params(labelsize=12, length=2.5, pad=2)
+    connection_colorbar.outline.set_linewidth(0.7)
     fig.subplots_adjust(left=0.07, right=0.99, bottom=0.07, top=0.91)
     fig.savefig(output_path, format='pdf', bbox_inches='tight')
     fig.savefig(output_path.replace('.pdf', '.svg'), format='svg', bbox_inches='tight')
