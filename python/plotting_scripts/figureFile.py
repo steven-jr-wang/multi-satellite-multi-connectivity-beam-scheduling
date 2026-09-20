@@ -410,7 +410,7 @@ def plot_runtime_boxplot(df, out_pdf, method_order=None):
         spine.set_linewidth(0.8)
         spine.set_color('k')
     legend_handles = [
-        Patch(facecolor=mpl.colors.to_rgba(runtime_colors[method], 0.24),
+        Patch(facecolor=runtime_colors[method],
               edgecolor='k', linewidth=0.65, label=display_labels[method])
         for method in methods
     ]
