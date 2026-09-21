@@ -1,10 +1,10 @@
-# Multi-Satellite Multi-Connectivity Beam Scheduling for NTN D2C Communication
+# Multi-Satellite Multi-Connectivity Beam-Hopping Scheduling for NTN D2C Communications
 
 This repository contains the simulation code for multi-satellite beam scheduling in NTN direct-to-cell networks.
 
 ## Related Works
 
-- **[1]** *Multi-Satellite Multi-Connectivity Beam Scheduling for NTN D2C Communication*. IEEE Transactions on Wireless Communications (Major Revision).
+- **[1]** *Multi-Satellite Multi-Connectivity Beam-Hopping Scheduling for NTN D2C Communications*. IEEE Transactions on Wireless Communications (Major Revision).
 - **[2]** *Beam Scheduling for Multi-Connectivity NTN LEO D2C Satellite Networks*. IEEE VTC 2026-Spring.
 - **[3]** Z. Lin, Z. Ni, L. Kuang, C. Jiang, and Z. Huang, “Multi-satellite beam hopping based on load balancing and interference avoidance for NGSO satellite communication systems,” *IEEE Transactions on Communications*, vol. 71, no. 1, pp. 282–295, 2023.
 - **[4]** M. Zhao, N. Ye, Q. Ouyang, Y. Jin, Y. Jin, and L. Zhao, “Multi-satellite cooperative communication: Exploiting time asynchrony in non-orthogonal transmissions,” *IEEE Transactions on Vehicular Technology*, vol. 72, no. 5, pp. 6868–6873, 2023.
