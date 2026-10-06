@@ -28,20 +28,21 @@ Jain_TDM_cell = cell(1, numScenarios);
 
 relDensityParams.useGenerated = true;
 
-R_over_D_CPDA_total = [];
-R_over_D_CBH_total = [];
-R_over_D_compared_total = [];
-R_over_D_TDM_total = [];
-
-Jain_CPDA_total = [];
-Jain_CBH_total = [];
-Jain_compared_total = [];
-Jain_TDM_total = [];
-
 fprintf('[START] figure11to12 | demand=%.2f Mbps | scenarios=%d | setups=%d | usersPerCell=%d | RB=%d\n', ...
     demand_value, numScenarios, nbrOfSetups, nbrOfUserPerCell, nbrOfRB);
 tAll = tic;
 for sc = 1:numScenarios
+    % Keep each distribution's samples separate.
+    R_over_D_CPDA_total = [];
+    R_over_D_CBH_total = [];
+    R_over_D_compared_total = [];
+    R_over_D_TDM_total = [];
+
+    Jain_CPDA_total = [];
+    Jain_CBH_total = [];
+    Jain_compared_total = [];
+    Jain_TDM_total = [];
+
     fprintf('\n[SCENARIO] %d/%d | %s\n', sc, numScenarios, scenarioNames{sc});
     tScenario = tic;
     switch scenarioNames{sc}
