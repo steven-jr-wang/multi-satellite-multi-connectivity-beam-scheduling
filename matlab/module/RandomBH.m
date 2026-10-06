@@ -1,6 +1,7 @@
-function [Beam_pattern, C, R_over_D,J_fairness] = RandomBH(h_vector, h_vector_sqr, epsilon_cell, data, center_data, num_cells, num_sats, sigma2, Ptx, w, Demand, wgs84, satellite_positions)
+function [Beam_pattern, C, R_over_D,J_fairness] = RandomBH(h_vector, h_vector_sqr, epsilon_cell, data, center_data, num_cells, num_sats, sigma2, Ptx, ~, Demand, wgs84, nbrOfRB)
 
-B = 30e6;
+B = nbrOfRB * 180 * 1e3;
+w = B * ones(num_cells, 1) / 1e6;
 
 Nvr = 100;
 
@@ -102,7 +103,8 @@ for t = 1:Nvr
 end
 
 % Compute demand satisfaction and Jain fairness.
-mean_R_all = mean(Rate_matrix, 2);
+slotLoss = 6/7;
+mean_R_all = mean(Rate_matrix, 2) * slotLoss;
 
 selected_idx = find(Demand > 0);
 
